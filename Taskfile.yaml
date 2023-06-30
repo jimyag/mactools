@@ -1,0 +1,17 @@
+# https://taskfile.dev
+
+version: '3'
+
+
+tasks:
+  default:
+    cmds:
+      - make bin
+      - GOOS=darwin GOARCH=amd64 CGO_CFLAGS="-arch x86_64" CGO_ENABLED=1 go build -x  mactools.go -o bin/mactools
+
+  run:
+    cmds:
+      - ./bin/mactools
+
+
+  
