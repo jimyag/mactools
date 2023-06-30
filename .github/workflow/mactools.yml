@@ -1,0 +1,42 @@
+name: build test
+
+on:
+  pull_request:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+
+jobs:
+  test:
+    name: build test
+    strategy:
+      matrix:
+        go-version: [1.x]
+        platform: [macos-latest]
+    runs-on: ${{matrix.platform}}
+    steps:
+      - name: Set up Go ${{matrix.go-version}}
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{matrix.go-version}}
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Download Go modules
+        run: go mod download
+        env:
+          GOPROXY: https://proxy.golang.org
+      - name: Install Task
+        uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+
+      - name: Build
+        run: task
+      
+      - name: Test
+        run: task test
