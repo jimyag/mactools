@@ -16,7 +16,12 @@ import (
 	"github.com/jimyag/mactools/pasteboard"
 )
 
-var templateUrl = "http://ip-api.com/json/%s?fields=status,message,country,city,isp,reverse,query&lang=zh-CN"
+var (
+	templateUrl             = "http://ip-api.com/json/%s?fields=status,message,country,city,isp,reverse,query&lang=zh-CN"
+	_, private24BitBlock, _ = net.ParseCIDR("10.0.0.0/8")
+	_, private20BitBlock, _ = net.ParseCIDR("172.16.0.0/12")
+	_, private16BitBlock, _ = net.ParseCIDR("192.168.0.0/16")
+)
 
 func init() {
 	handle := &ParseIpHandle{
@@ -50,6 +55,10 @@ func (h *ParseIpHandle) Handle(pb *pasteboard.Pasteboard, content string) any {
 		return nil
 	}
 	h.ip = ip
+
+	if h.isPrivateIP() {
+		return nil
+	}
 	respData, err := h.getInfo()
 	if err != nil || respData == nil {
 		log.Error("get ip error: %v ,%v", err, respData)
@@ -68,6 +77,10 @@ func (h *ParseIpHandle) show(content *ResponseData) {
 		SetTitle(content.Query).
 		SetInformativeText(content.format()).
 		Show()
+}
+
+func (h *ParseIpHandle) isPrivateIP() bool {
+	return private24BitBlock.Contains(h.ip) || private20BitBlock.Contains(h.ip) || private16BitBlock.Contains(h.ip)
 }
 
 func (h *ParseIpHandle) getInfo() (*ResponseData, error) {
