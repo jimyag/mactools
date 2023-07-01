@@ -35,9 +35,9 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-
+      # https://github.com/actions/runner-images/issues/2187
       - name: Build
-        run: task
+        run: task x86
       
       - name: Test
         run: task test

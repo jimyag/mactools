@@ -6,7 +6,12 @@ tasks:
   default:
     cmds:
       - mkdir -p bin
-      - go build -o bin/mactools mactools.go 
+      - GOOS=darwin GOARCH=amd64 CGO_CFLAGS="-arch x86_64" CGO_ENABLED=1 go build -x -o bin/mactools mactools.go 
+
+  x86:
+    cmds:
+      - mkdir -p bin
+      - go build -o bin/mactools mactools.go
 
   run:
     cmds:

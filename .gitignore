@@ -1,1 +1,10 @@
 bin
+
+# vscode 
+.vscode
+
+# goland
+.idea
+
+# mac
+.DS_Store
