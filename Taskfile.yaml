@@ -15,7 +15,7 @@ tasks:
 
   run:
     cmds:
-      - ./bin/mactools
+      - bash run.sh
   
   test:
     cmds:
