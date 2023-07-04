@@ -5,22 +5,27 @@
 package app
 
 import (
-	"github.com/jimyag/mactools/log"
-	"github.com/jimyag/mactools/pasteboard"
+	"github.com/jimyag/mactools/pkg/clipboard"
+	"github.com/jimyag/mactools/pkg/log"
 	"github.com/progrium/macdriver/cocoa"
 	"github.com/progrium/macdriver/core"
 	"github.com/progrium/macdriver/objc"
 )
 
 var (
-	App cocoa.NSApplication
+	app cocoa.NSApplication
 )
 
 func init() {
 	log.SetLevel(log.InfoLevel)
 
-	App = cocoa.NSApp_WithDidLaunch(func(_ objc.Object) {
-		go pasteboard.PB.Run()
+	app = cocoa.NSApp_WithDidLaunch(func(_ objc.Object) {
+		go func() {
+			err := clipboard.GetClipboard().Listen()
+			if err != nil {
+				panic(err)
+			}
+		}()
 	})
 
 	// https://github.com/progrium/macdriver/blob/main/examples/notification/main.go
@@ -30,5 +35,9 @@ func init() {
 	})
 	nsbundle.Swizzle("bundleIdentifier", "__bundleIdentifier")
 
-	App.SetActivationPolicy(cocoa.NSApplicationActivationPolicyAccessory)
+	app.SetActivationPolicy(cocoa.NSApplicationActivationPolicyAccessory)
+}
+
+func Run() {
+	app.Run()
 }

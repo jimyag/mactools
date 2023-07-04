@@ -3,17 +3,16 @@
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
 
-package app
+package parse_ip
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jimyag/mactools/pkg/clipboard"
+	"github.com/jimyag/mactools/pkg/log"
+	"github.com/jimyag/mactools/pkg/notification"
 	"net"
 	"net/http"
-
-	"github.com/jimyag/mactools/log"
-	"github.com/jimyag/mactools/notification"
-	"github.com/jimyag/mactools/pasteboard"
 )
 
 var (
@@ -24,10 +23,15 @@ var (
 )
 
 func init() {
+	log.Debug("init parse ip handle")
 	handle := &ParseIpHandle{
 		client: http.DefaultClient,
 	}
-	pasteboard.PB.Register(handle)
+	clipboard.GetClipboard().Register(func(data clipboard.Data) {
+		if data.Type == clipboard.ClipboardItemTypeString {
+			handle.Handle(data.Content.(string))
+		}
+	})
 }
 
 type ParseIpHandle struct {
@@ -35,45 +39,37 @@ type ParseIpHandle struct {
 	client *http.Client
 }
 
-func (h *ParseIpHandle) OnCopy(pb *pasteboard.Pasteboard, content string) {
-}
-
-func (h *ParseIpHandle) AfterHandle(pb *pasteboard.Pasteboard, res any) {
-	if res == nil {
-		return
-	}
-	h.show(res.(*ResponseData))
-}
-
-func (h *ParseIpHandle) Handle(pb *pasteboard.Pasteboard, content string) any {
+func (h *ParseIpHandle) Handle(content string) {
 	log.Debug("handle: ", content)
 	if content == "" {
-		return nil
+		return
 	}
 	ip := net.ParseIP(content)
 	if ip == nil {
-		return nil
+		return
 	}
 	h.ip = ip
 
 	if h.isPrivateIP() {
-		return nil
+		return
 	}
 	respData, err := h.getInfo()
 	if err != nil || respData == nil {
 		log.Error("get ip error: %v ,%v", err, respData)
-		return nil
+		return
 	}
 	if respData.Status != "success" {
 		log.Error("get ip error: %v", respData.Message)
-		return nil
+		return
 	}
-	return respData
+	if respData == nil {
+		return
+	}
+	h.show(respData)
 }
 
 func (h *ParseIpHandle) show(content *ResponseData) {
-	notification.
-		New().
+	notification.New().
 		SetTitle(content.Query).
 		SetInformativeText(content.format()).
 		Show()

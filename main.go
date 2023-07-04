@@ -6,12 +6,11 @@
 package main
 
 import (
-	"github.com/jimyag/mactools/app"
-	"github.com/jimyag/mactools/log"
+	"github.com/jimyag/mactools/cmd/app"
+	"github.com/jimyag/mactools/pkg/log"
 )
 
 func main() {
-	app := app.App
 	log.Info("mactools running!")
 	app.Run()
 }

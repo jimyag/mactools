@@ -3,22 +3,25 @@
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
 
-package app
+package timestamp
 
 import (
+	"github.com/jimyag/mactools/pkg/clipboard"
+	"github.com/jimyag/mactools/pkg/log"
+	"github.com/jimyag/mactools/pkg/notification"
 	"strconv"
 	"time"
-
-	"github.com/jimyag/mactools/log"
-	"github.com/jimyag/mactools/notification"
-	"github.com/jimyag/mactools/pasteboard"
 )
 
 func init() {
 	handle := &TimeStampHandle{
 		timeFormat: time.DateTime,
 	}
-	pasteboard.PB.Register(handle)
+	clipboard.GetClipboard().Register(func(data clipboard.Data) {
+		if data.Type != clipboard.ClipboardItemTypeString {
+			handle.AfterHandle(handle.Handle(data.Content.(string)))
+		}
+	})
 }
 
 type TimeStampHandle struct {
@@ -26,17 +29,14 @@ type TimeStampHandle struct {
 	timeFormat string
 }
 
-func (h *TimeStampHandle) OnCopy(pb *pasteboard.Pasteboard, content string) {
-}
-
-func (h *TimeStampHandle) AfterHandle(pb *pasteboard.Pasteboard, res any) {
+func (h *TimeStampHandle) AfterHandle(res any) {
 	if res == nil {
 		return
 	}
 	h.show(res.(string))
 }
 
-func (h *TimeStampHandle) Handle(pb *pasteboard.Pasteboard, content string) any {
+func (h *TimeStampHandle) Handle(content string) any {
 	log.Debug("handle: ", content)
 	if content == "" {
 		return nil
@@ -74,8 +74,7 @@ func (h *TimeStampHandle) Handle(pb *pasteboard.Pasteboard, content string) any 
 }
 
 func (h *TimeStampHandle) show(content string) {
-	notification.
-		New().
+	notification.New().
 		SetTitle(content).
 		SetInformativeText(h.time.Format(h.timeFormat)).
 		Show()

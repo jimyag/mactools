@@ -11,29 +11,29 @@ import (
 
 // https://github.com/progrium/macdriver/blob/main/examples/notification/main.go
 
-type Notification struct {
+type MacImpl struct {
 	notification       objc.Object
 	notificationCenter objc.Object
 }
 
-func New() *Notification {
-	return &Notification{
+func New() Notification {
+	return &MacImpl{
 		notification:       objc.Get("NSUserNotification").Alloc().Init(),
 		notificationCenter: objc.Get("NSUserNotificationCenter").Send("defaultUserNotificationCenter"),
 	}
 }
 
-func (n *Notification) Show() {
+func (n *MacImpl) Show() {
 	n.notificationCenter.Send("deliverNotification:", n.notification)
 	n.notification.Release()
 }
 
-func (n *Notification) SetTitle(title string) *Notification {
+func (n *MacImpl) SetTitle(title string) *MacImpl {
 	n.notification.Set("title:", core.String(title))
 	return n
 }
 
-func (n *Notification) SetInformativeText(text string) *Notification {
+func (n *MacImpl) SetInformativeText(text string) *MacImpl {
 	n.notification.Set("informativeText:", core.String(text))
 	return n
 }
